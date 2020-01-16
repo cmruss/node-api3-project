@@ -16,6 +16,7 @@ router.get('/', (req, res) => {
     res.status(500).json({ error: "The posts information could not be retrieved." })
   })
 });
+
 //** GET BY ID **//
 router.get('/:id', validatePostId, (req, res) => {
   // do your magic!
