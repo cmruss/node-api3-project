@@ -5,21 +5,7 @@ const Posts = require('../posts/postDb');
 
 const router = express.Router();
 
-function validateUserId(req, res, next) {
-  // do your magic!
-  if (req.params.id) {
-    Users.getById(req.params.id)
-    .then(user => {
-      if (!user) {
-        res.status(400).json({ message: "Invalid user ID." })
-      } else {
-        req = { ...req, user: user}
-        next();
-      }
-    })
-  }
-}
-
+//** POST USER **//
 router.post('/', validateUser, (req, res) => {
   // do your magic!
   Users.insert(req.body)
@@ -32,9 +18,15 @@ router.post('/', validateUser, (req, res) => {
   });
 });
 
+//** POST POST **//
 router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
   // do your magic!
-  Posts.insert(req.body)
+  const id = req.params.id
+  let post = req.body
+
+  post = {...post, user_id: id}
+
+  Posts.insert(post)
   .then(post => {
     res.status(201).json(post)
   })
@@ -44,6 +36,7 @@ router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
   });
 });
 
+//** GET **//
 router.get('/', (req, res) => {
   // do your magic!
   Users.get()
@@ -55,14 +48,16 @@ router.get('/', (req, res) => {
   })
 });
 
+//** GET BY ID **//
 router.get('/:id', validateUserId, (req, res) => {
   // do your magic!
   res.status(200).json(req.user)
 });
 
+//** GET POSTS BY ID **//
 router.get('/:id/posts', validateUserId, (req, res) => {
   // do your magic!
-  Users.getUserPosts(req.user)
+  Users.getUserPosts(req.user.id)
   .then(posts => {
     if (posts.length === 0){
       res.status(200).json({ message: "User has no posts"})
@@ -76,9 +71,10 @@ router.get('/:id/posts', validateUserId, (req, res) => {
   });
 });
 
+//** DELETE **//
 router.delete('/:id', validateUserId, (req, res) => {
   // do your magic!
-  Users.remove(req.user)
+  Users.remove(req.user.id)
   .then(del => {
     if (del === 1 ){
       res.status(200).json({ message: "User deleted."})
@@ -91,6 +87,7 @@ router.delete('/:id', validateUserId, (req, res) => {
   });
 });
 
+//** PUT **//
 router.put('/:id', validateUserId, (req, res) => {
   // do your magic!
   let changes = req.body;
@@ -133,21 +130,20 @@ function validateUserId(req, res, next) {
 
 function validateUser(req, res, next) {
   // do your magic!
-  if (Object.keys(req.body).length === 0) {
+  if (req.hasBody === !true){
       res.status(400).json({ message: 'Missing user data.' })
   } else if (!req.body.name) {
       res.status(400).json({ message: 'Missing required name field.' })
   } else {
-      next()
+      next();
   }
 };
 
 function validatePost(req, res, next) {
   // do your magic!
-  const body = req.body
-  if (!body) {
+  if (!req.hasBody === !true) {
       res.status(400).json({ message: 'Missing post data.' })
-  } else if (!body.text) {
+  } else if (!req.body.text) {
       res.status(400).json({ message: 'Missing required text field.' })
   } else {
       next()
